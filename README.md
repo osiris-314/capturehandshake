@@ -1,5 +1,10 @@
 # Automate The Capture Of Handshakes
 
+# !!! DISCLAIMER !!!
+
+This script if for educational purposes only, as this attach is illegal to perform without consent from the owner of the network you are trying to attack. Use it at your own risk. Only test networks that you have permision to test.
+
+
 
 # required tools installed on /usr/local/bin
 addtopath 
