@@ -12,7 +12,7 @@ This script is for educational purposes only, as this attack is illegal to perfo
 
 ## The program deauthenticates all clients in a wifi network, and setup a listener for handshakes. when the clients try to reconnect to the wifi , the handshake gets captured and the attack stops.
 ```
-python capturehandshake.py
+python capturehandshake.py <interface_name>
 ```
 #
 ![pre_capture](https://github.com/user-attachments/assets/c9d8663c-6622-4391-9c0b-2ad0a9e7c9d5)
