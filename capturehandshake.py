@@ -116,7 +116,6 @@ if __name__ == "__main__":
         
         interface = sys.argv[1]  # Get the interface from the command-line argument
 
-        subprocess.run('monitormode -stop', shell=True, stdout=open(os.devnull, 'wb'))
         networks = get_wifi_networks(interface)
         if networks:
             display_networks(networks)
@@ -136,7 +135,6 @@ if __name__ == "__main__":
             print(Fore.LIGHTBLUE_EX + "Encryption: " + Fore.YELLOW + str(target_encryption) + Fore.RESET)
             print(Fore.LIGHTBLUE_EX + "Signal Strength: " + Fore.YELLOW + str(target_signal_strength) + Fore.RESET + '\n')
 
-            subprocess.run('monitormode -start', shell=True, stdout=open(os.devnull, 'wb'))
 
             # Start airodump-ng in a separate process
             airodump_process, output_file = run_airodump(target_essid, target_channel, target_bssid, interface)
@@ -157,4 +155,3 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nProgram interrupted. Cleaning up and exiting...")
-        subprocess.run('monitormode -stop', shell=True, stdout=open(os.devnull, 'wb'))
