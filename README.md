@@ -8,8 +8,7 @@ This script is for educational purposes only, as this attack is illegal to perfo
 ```
 python capturehandshake.py <interface_name>
 ```
-![pre_capture](https://github.com/user-attachments/assets/c9d8663c-6622-4391-9c0b-2ad0a9e7c9d5)
-
+![pre_capture](https://github.com/user-attachments/assets/bd2927ca-0721-4072-a9cb-b924a3f8f83a)
 ![capture](https://github.com/user-attachments/assets/b8678991-463a-4800-8b6a-332089ec8e2a)
 
 # The Handshake Is Captured In The .cap File, for later decryption.
