@@ -4,6 +4,9 @@
 
 This script is for educational purposes only, as this attack is illegal to perform without consent from the owner of the network you are trying to attack. Use it at your own risk. Only test networks that you have permission to test.
 
+## Requirements
+[monitormode](https://www.github.com/osiris-314/monitormode)
+
 ## The program deauthenticates all clients in a wifi network, and setup a listener for handshakes. when the clients try to reconnect to the wifi , the handshake gets captured and the attack stops.
 ```
 python capturehandshake.py <interface_name>
